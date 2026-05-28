@@ -4,7 +4,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
-from fastapi import APIRouter, Depends, HTTPException, Form, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Form, Request, status, UploadFile, File
 
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -148,9 +148,112 @@ async def delete_reviewer(reviewer_id: int, db: Session = Depends(get_db)):
     db.commit()
     return RedirectResponse(url="/admin/reviewers", status_code=status.HTTP_303_SEE_OTHER)
 
-# --------------------------------------------------------------
-#   Manage Restaurants – CRUD (under /admin)
-# --------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Manage Reviews – list
+# ----------------------------------------------------------------------
+@router.get("/reviews", response_class=HTMLResponse)
+async def admin_list_reviews(request: Request, db: Session = Depends(get_db)):
+    reviews = db.query(Review).order_by(Review.id.desc()).all()
+    return HTMLResponse(content=jinja_templates.get_template("admin_reviews.html").render({"request": request, "reviews": reviews}))
+
+# ----------------------------------------------------------------------
+# Delete Review
+# ----------------------------------------------------------------------
+@router.get("/reviews/delete/{review_id}")
+async def admin_delete_review(review_id: int, db: Session = Depends(get_db)):
+    review = db.query(Review).filter(Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    # delete associated photos if they exist
+    for photo in (review.photo1, review.photo2):
+        if photo:
+            db.delete(photo)
+    db.delete(review)
+    db.commit()
+    return RedirectResponse(url="/admin/reviews", status_code=status.HTTP_303_SEE_OTHER)
+
+# ----------------------------------------------------------------------
+# Edit Review – form (reuse public review_form template)
+# ----------------------------------------------------------------------
+@router.get("/reviews/edit/{review_id}", response_class=HTMLResponse)
+async def admin_edit_review_form(request: Request, review_id: int, db: Session = Depends(get_db)):
+    review = db.query(Review).filter(Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    return HTMLResponse(content=jinja_templates.get_template("review_form.html").render({
+        "request": request,
+        "review": review,
+        "restaurant_id": review.restaurant_id,
+        "edit_mode": True,
+    }))
+
+# ----------------------------------------------------------------------
+# Edit Review – submit update
+# ----------------------------------------------------------------------
+@router.post("/reviews/edit/{review_id}")
+async def admin_update_review(
+    review_id: int,
+    restaurant_id: int = Form(...),
+    reviewer_email: str = Form(...),
+    score: float = Form(...),
+    comments: str = Form(None),
+    price_subscore: int = Form(0),
+    salsa_subscore: int = Form(0),
+    tortillas_subscore: int = Form(0),
+    condiments_subscore: int = Form(0),
+    ambiance_subscore: int = Form(0),
+    flavor_subscore: int = Form(0),
+    service_subscore: int = Form(0),
+    homemade_tortillas_yn: bool = Form(False),
+    other_notes: str = Form(None),
+    photo_file_1: UploadFile = File(None),
+    photo_file_2: UploadFile = File(None),
+    db: Session = Depends(get_db),
+):
+    from app.models.db_base import Photo
+    import os, shutil, uuid
+    review = db.query(Review).filter(Review.id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    # update scalar fields
+    review.restaurant_id = restaurant_id
+    review.reviewer_email = reviewer_email
+    review.score = score
+    review.comments = comments
+    review.price_subscore = price_subscore
+    review.salsa_subscore = salsa_subscore
+    review.tortillas_subscore = tortillas_subscore
+    review.condiments_subscore = condiments_subscore
+    review.ambiance_subscore = ambiance_subscore
+    review.flavor_subscore = flavor_subscore
+    review.service_subscore = service_subscore
+    review.homemade_tortillas_yn = homemade_tortillas_yn
+    review.other_notes = other_notes
+
+    upload_dir = "/tmp/uploads"
+    if photo_file_1:
+        filename = f"{uuid.uuid4().hex}_{photo_file_1.filename}"
+        os.makedirs(upload_dir, exist_ok=True)
+        path = os.path.join(upload_dir, filename)
+        with open(path, "wb") as buf:
+            shutil.copyfileobj(photo_file_1.file, buf)
+        if review.photo1:
+            db.delete(review.photo1)
+        review.photo1 = Photo(url=f"/static/uploads/{filename}")
+        db.add(review.photo1)
+    if photo_file_2:
+        filename = f"{uuid.uuid4().hex}_{photo_file_2.filename}"
+        os.makedirs(upload_dir, exist_ok=True)
+        path = os.path.join(upload_dir, filename)
+        with open(path, "wb") as buf:
+            shutil.copyfileobj(photo_file_2.file, buf)
+        if review.photo2:
+            db.delete(review.photo2)
+        review.photo2 = Photo(url=f"/static/uploads/{filename}")
+        db.add(review.photo2)
+    db.commit()
+    return RedirectResponse(url="/admin/reviews", status_code=status.HTTP_303_SEE_OTHER)
+
 # LIST – show all restaurants
 @router.get("/restaurants", response_class=HTMLResponse)
 async def list_restaurants(request: Request, db: Session = Depends(get_db)):
@@ -306,11 +409,11 @@ async def generate_xlsx(db: Session = Depends(get_db)):
             r.google_place_url or "",
             r.google_map_url or "",
             r.website_url or "",
-      r.yelp_url or "",
-      r.visited_yn,
-      r.avg_score,
-      r.review_count,
-      "Rate This Place",   # placeholder – will turn into a hyperlink below
+            r.yelp_url or "",
+            r.visited_yn,
+            r.avg_score,
+            r.review_count,
+            "",   # placeholder for review URL – will be set below
         ])
         cur_row = ws.max_row
         # ---- 3️⃣a Hyperlink the URL columns ----
@@ -328,8 +431,8 @@ async def generate_xlsx(db: Session = Depends(get_db)):
                 cell.style = "Hyperlink"
         # ---- 3️⃣b Add hyperlink for the “Rate This Place” cell ----
         review_cell = ws.cell(row=cur_row, column=11)   # 11th column = review_url
-        review_form_url = f"http://127.0.0.1:8000/public/review_form?restaurant_id={r.id}"
-        review_cell.value = "Rate This Place"
+        review_form_url = f"https://restaurant-system-gb7u.onrender.com/public/review_form?restaurant_id={r.id}"
+        review_cell.value = review_form_url
         review_cell.hyperlink = review_form_url
         review_cell.style = "Hyperlink"
     # ------------------------------------------------------
