@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import func
 
 from app.services.db_service import get_db
-from app.models.db_base import Review, Restaurant, Photo
+from app.models.db_base import Review, Restaurant, Photo, AuthorizedReviewer
 from app.schemas.review_schema import ReviewCreateSchema, ReviewResponseSchema
 
 router = APIRouter(prefix="/reviews", tags=["reviews"], redirect_slashes=False)
