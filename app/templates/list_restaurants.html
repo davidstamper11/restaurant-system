@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Dalton Taco Places</title>
+    <style>
+        body {
+            background-color: #d0cba4;
+            /* warm Mexican‑style yellow */
+            color: #333;
+            font-family: Arial, sans-serif;
+        }
+
+        a {
+            color: #0d0d019e;
+
+            a:link,
+            a:visited,
+            a:hover,
+            a:active {
+                color: #0d0d019e;
+                /* your chosen link color */
+                text-decoration: none;
+            }
+    </style>
+</head>
+
+<body>
+    <h1>🌵 💃🏻 🪇 🥑 🏜️ 🌮 Dalton Tacos 🌮 🪅 🍻 🌶️ 🕺🏽🍋‍🟩</h1>
+    <ul>
+        {% for r in restaurants %}
+        <li>
+            {% if r.google_place_url %}
+            <a href="{{ r.google_place_url }}" target="_blank">{{ r.name }}</a>
+            {% else %}
+            {{ r.name }}
+            {% endif %}
+            –
+            {% if r.google_map_url %}
+            <a href="{{ r.google_map_url }}" target="_blank">{{ r.address }}</a>
+            {% else %}
+            {{ r.address }}
+            {% endif %}
+            – {% if r.review_count > 0 %}<a href="/public/reviews/{{ r.id }}"># Reviews: {{ r.review_count }}</a>{% else
+            %}# Reviews: {{ r.review_count }}{% endif %}
+            – Score: {{ r.avg_score }}
+            <a href="/public/review_form?restaurant_id={{ r.id }}">Rate This Place</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>

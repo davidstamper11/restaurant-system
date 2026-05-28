@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/mexican.css">
+    <style>
+        .btn-3d {
+            display: block;
+            width: 250px;
+            padding: 12px 0;
+            margin: 20px 0;
+            /* left-aligned */
+            font-size: 1rem;
+            color: #380808;
+            background: #c2af00;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 4px #252201;
+            cursor: pointer;
+            text-align: center;
+            /* optional for button text alignment */
+        }
+
+        .btn-3d-blue {
+            display: block;
+            width: 250px;
+            padding: 12px 0;
+            margin: 20px 0;
+            /* left-aligned */
+            font-size: 1rem;
+            color: #110d2b;
+            background: #7db0da;
+            border: none;
+            border-radius: 6px;
+            box-shadow: 0 4px #252201;
+            cursor: pointer;
+            text-align: center;
+            /* optional for button text alignment */
+        }
+
+        .btn-3d:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+
+<body class="mexican-theme">
+    <h1>🌮 Admin Dashboard – Dalton Taco Review System 🌮
+        <p></p>
+        <p></p>
+    </h1>
+    <div class="dashboard-buttons">
+        <button class="btn-3d" onclick="location.href='/admin/generate_xlsx'">
+            Generate MyMaps Excel
+        </button>
+        <button class="btn-3d" onclick="location.href='/admin/restaurants'">
+            Manage Taco Places
+        </button>
+        <button class="btn-3d" onclick="location.href='/admin/reviewers'">
+            Manage Reviewers
+        </button>
+        <button class="btn-3d-blue" onclick="location.href='/public/list-restaurants'">
+            Dalton Tacos
+        </button>
+    </div>
+</body>
+
+</html>

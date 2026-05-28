@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Submitted</title>
+    <link rel="stylesheet" href="/static/mexican.css">
+</head>
+<body>
+    <h1>Thank you for reviewing {{ restaurant.name }}</h1>
+    <p><strong>Score:</strong> {{ review.score }}</p>
+    <p><strong>Comments:</strong> {{ review.comments }}</p>
+    {% if photo1 %}
+        <a href="{{ photo1.url }}" target="_blank"><img src="{{ photo1.url }}" alt="Photo 1" style="max-width:300px;"></a>
+    {% endif %}
+    {% if photo2 %}
+        <a href="{{ photo2.url }}" target="_blank"><img src="{{ photo2.url }}" alt="Photo 2" style="max-width:300px;"></a>
+    {% endif %}
+    <p><a href="{{ back_url }}">Back to Dalton Tacos List</a></p>
+</body>
+</html>

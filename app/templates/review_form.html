@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Submit Taco Review</title>
+    <link rel="stylesheet" href="/static/mexican.css">
+    <style>
+        body {
+            background: #f8f5e3;
+            color: #222;
+            font-family: 'Helvetica', sans-serif;
+            padding: 0 0.5rem 0.5rem 0.2rem;
+        }
+
+        .card {
+            background: #fff8eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, .05);
+        }
+
+        h1 {
+            color: #c24100;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: .75rem;
+        }
+
+        input[type=number],
+        input[type=text],
+        textarea {
+            width: 100%;
+            padding: .5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 25px;
+            background: #ccc;
+            appearance: none;
+            margin: 10px 0;
+            border-radius: 15px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider[data-set="true"] {
+            background: #dbaa41;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #c24100;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .slider::-moz-range-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #c24100;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .score-label {
+            font-weight: 500;
+            margin-top: .5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .required {
+            color: #c24100;
+        }
+
+        .note {
+            font-size: .9rem;
+            margin-top: .5rem;
+            color: #555;
+        }
+
+        button {
+            background: #c24100;
+            color: #fff;
+            padding: .75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #a53e00;
+        }
+    </style>
+    <script>
+        function updateSlider(slider, labelId) {
+            var val = slider.value;
+            document.getElementById(labelId).textContent = val;
+            if (val > 0) {
+                slider.dataset.set = 'true';
+            } else {
+                slider.dataset.set = 'false';
+            }
+        }
+        window.onload = function () {
+            const sliders = document.querySelectorAll('.slider');
+            sliders.forEach(s => { s.dataset.set = 'false'; })
+        }
+    </script>
+</head>
+
+<body>
+    <div class="card">
+        <h1>🌵 💃🏻 🪇 🥑 🏜️ 🌮 Taco Review – {{ restaurant_name }} 🌮 🪅 🍻 🌶️ 🕺🏽🍋‍🟩</h1>
+        <p style="font-size:.9rem;color:#777;">Address: {{ restaurant_address }}</p>
+        <form action="/reviews/" method="post" enctype="multipart/form-data">
+
+            <label>Reviewer Email<span class="required">*</span> <input type="email" name="reviewer_email"
+                    id="reviewer_email" required style="width:35%;">
+                <script>
+                    document.getElementById('reviewer_email').addEventListener('blur', function () {
+                        var email = this.value;
+                        var re = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+                        if (!re.test(email)) {
+                            alert('Not a valid email format.');
+                        }
+                    });
+                </script>
+            </label>
+
+            <input type="hidden" name="restaurant_id" value="{{ restaurant_id }}">
+
+            <label>Overall Score<span class="required">*</span> (0.1–5.0)
+                <input type="number" name="score" step="0.1" min="0.1" max="5" required value="0.0"
+                    style="width: 40px;">
+            </label>
+
+            <label class="score-label">Price<span class="required">*</span> ⚡ <span id="priceScore">0</span>
+                <input type="range" name="price_subscore" class="slider" min="0" max="5" value="0"
+                    oninput="updateSlider(this,'priceScore')">
+            </label>
+
+            <label class="score-label">Salsa<span class="required">*</span> 🥑 <span id="salsaScore">0</span>
+                <input type="range" name="salsa_subscore" class="slider" min="0" max="5" value="0"
+                    oninput="updateSlider(this,'salsaScore')">
+            </label>
+
+            <label class="score-label">Tortillas<span class="required">*</span> 🧆 <span id="tortillaScore">0</span>
+                <input type="range" name="tortillas_subscore" class="slider" min="0" max="5" value="0"
+                    oninput="updateSlider(this,'tortillaScore')">
+            </label>
+
+            <label class="score-label">Condiments<span class="required">*</span> 🌶️ <span id="condimentScore">0</span>
+                <input type="range" name="condiments_subscore" class="slider" min="0" max="5" value="0"
+                    oninput="updateSlider(this,'condimentScore')">
+            </label>
+
+            <label class="score-label">Ambiance<span class="required">*</span> 🌈 <span id="ambianceScore">0</span>
+                <input type="range" name="ambiance_subscore" class="slider" min="0" max="5" value="0"
+                    oninput="updateSlider(this,'ambianceScore')">
+            </label>
+
+            <label class="score-label">Flavor<span class="required">*</span> 🌟 <span id="flavorScore">0</span>
+                <input type="range" name="flavor_subscore" class="slider" min="0" max="5" value="0"
+                    oninput="updateSlider(this,'flavorScore')">
+            </label>
+
+            <label class="score-label">Service<span class="required">*</span> 👨‍🍳 <span id="serviceScore">0</span>
+                <input type="range" name="service_subscore" class="slider" min="0" max="5" value="0"
+                    oninput="updateSlider(this,'serviceScore')">
+            </label>
+
+            <label>Homemade Tortillas? <input type="checkbox" name="homemade_tortillas_yn"></label>
+
+
+
+            <label>Reviewer Comments<span class="required">*</span></label>
+            <p></p>
+            <textarea name="comments" rows="3" style="width:60%;"></textarea>
+            <p></p>
+            <p></p>
+            <label>Other Notes</label>
+            <p></p>
+            <textarea name="other_notes" rows="2" style="width:60%;"></textarea>
+            <p></p>
+            <p></p>
+
+            <label>Photo 1
+                <input type="file" name="photo_file_1" accept="image/*">
+            </label>
+
+            <label>Photo 2
+                <input type="file" name="photo_file_2" accept="image/*">
+            </label>
+
+            <p class="note"><span class="required">*</span> indicates required field</p>
+
+            <button type="submit">Submit Review</button>
+        </form>
+    </div>
+</body>
+
+</html>

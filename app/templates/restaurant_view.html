@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurant Details</title>
+    <link rel="stylesheet" href="/static/mexican.css">
+</head>
+<body class="mexican-theme">
+    <h1>{{ restaurant.name }}</h1>
+    <p>Address: {{ restaurant.address }}</p>
+    <p>Average Score: {{ restaurant.avg_score }}</p>
+    <h2>Reviews</h2>
+    {% for rev in reviews %}
+        <div class="review">
+            <p>Score: {{ rev.score }}</p>
+            <p>Comments: {{ rev.comments }}</p>
+            {% if rev.photo_1_id %}<img src="{{ rev.photo_1_url }}" alt="Photo 1" width="200">{% endif %}
+            {% if rev.photo_2_id %}<img src="{{ rev.photo_2_url }}" alt="Photo 2" width="200">{% endif %}
+        </div>
+    {% endfor %}
+</body>
+</html>

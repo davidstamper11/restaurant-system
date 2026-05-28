@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Restaurants</title>
+    <link rel="stylesheet" href="/static/mexican.css">
+    <style>
+        table{width:100%;border-collapse:collapse;margin-bottom:1rem;}
+        th,td{border:1px solid #ccc;padding:.5rem;text-align:left;}
+        th{text-background:#f0e9cd;}
+        .actions button{margin-right:.5rem;}
+    </style>
+</head>
+<body class="mexican-theme">
+    <h1>Manage Restaurants</h1>
+    <a href="/admin/restaurants/new">Add New Restaurant</a>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th><th>Address</th><th>Google Place</th><th>Map URL</th>
+                <th>Website</th><th>Yelp</th><th>Visited</th><th>Avg Score</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be populated from the server -->
+        </tbody>
+    </table>
+</body>
+</html>

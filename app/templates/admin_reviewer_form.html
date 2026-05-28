@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if reviewer %}Edit Reviewer{% else %}Add New Reviewer{% endif %}</title>
+    <link rel="stylesheet" href="/static/mexican.css">
+    <style>
+        .form-group{margin-bottom:1rem;}
+        label{display:block;margin-bottom:.3rem;}
+        input[type="text"],input[type="email"],input[type="password"],input[type="number"]{width:250px;padding:.3rem;}
+        .required{color:#c24100;}
+        .note{font-size:.9rem;color:#555;margin-top:.5rem;}
+    </style>
+</head>
+<body class="mexican-theme">
+    <h1>{% if reviewer %}Edit Reviewer{% else %}Add New Reviewer{% endif %}</h1>
+    <form action="{{ action }}" method="post">
+        <div class="form-group">
+            <label>Name:
+                <input type="text" name="name" value="{{ reviewer.name if reviewer else '' }}">
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Email<span class="required">*</span>:
+                <input type="email" name="email" value="{{ reviewer.email if reviewer else '' }}" required>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Is Admin:
+                <input type="checkbox" name="is_admin_yn" {% if reviewer and reviewer.is_admin_yn %}checked{% endif %}>
+            </label>
+        </div>
+        <div class="form-group">
+            <label>Password:
+                <input type="password" name="password" value="{{ reviewer.password if reviewer else '' }}">
+            </label>
+        </div>
+        <p class="note"><span class="required">*</span> indicates required field (email only)</p>
+        <button type="submit">Save Reviewer</button>
+    </form>
+    <a href="/admin/reviewers">Back to list</a>
+</body>
+</html>

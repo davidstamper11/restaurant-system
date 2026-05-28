@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Reviews for {{ restaurant.name }}</title>
+  <link rel="stylesheet" href="/static/mexican.css">
+  <style>
+    .card {
+      margin: 20px 0;
+      padding: 12px;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    th,
+    td {
+      width: 100px;
+      /* adjust as needed */
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+      padding: 4px;
+      text-align: center;
+    }
+
+
+
+    .thumb {
+      max-width: 150px;
+      margin: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>All reviews for {{ restaurant.name }}</h1>
+  {% for review in reviews %}
+  <div class="card">
+    <p><strong>Reviewer:</strong> {{ review.reviewer_email }}</p>
+    <table>
+      <tr>
+        <th>Score</th>
+        <th>Price</th>
+        <th>Salsa</th>
+        <th>Tortillas</th>
+      </tr>
+      <tr>
+        <td>{{ review.score }}</td>
+        <td>{{ review.price_subscore }}</td>
+        <td>{{ review.salsa_subscore }}</td>
+        <td>{{ review.tortillas_subscore }}</td>
+      </tr>
+      <tr>
+        <th>Condiments</th>
+        <th>Ambiance</th>
+        <th>Flavor</th>
+        <th>Service</th>
+      </tr>
+      <tr>
+        <td>{{ review.condiments_subscore }}</td>
+        <td>{{ review.ambiance_subscore }}</td>
+        <td>{{ review.flavor_subscore }}</td>
+        <td>{{ review.service_subscore }}</td>
+      </tr>
+    </table>
+    <p><strong>Comments:</strong> {{ review.comments }}</p>
+    <p><strong>Other Notes:</strong> {{ review.other_notes }}</p>
+    {% if review.photo1 %}
+    <a href="{{ review.photo1.url }}" target="_blank">
+      <img src="{{ review.photo1.url }}" alt="Photo 1" class="thumb">
+    </a>
+    {% endif %}
+    {% if review.photo2 %}
+    <a href="{{ review.photo2.url }}" target="_blank">
+      <img src="{{ review.photo2.url }}" alt="Photo 2" class="thumb">
+    </a>
+    {% endif %}
+  </div>
+  {% endfor %}
+  <a href="/public/list-restaurants">Back to Taco Places</a>
+  <a href="/admin/dashboard" style="display:block; margin-top:1rem;">Back to Admin Dashboard</a>
+
+</html>
