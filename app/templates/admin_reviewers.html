@@ -1,21 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Manage Reviewers</title>
     <link rel="stylesheet" href="/static/mexican.css">
     <style>
-        table{width:100%;border-collapse:collapse;margin-bottom:1rem;}
-        th,td{border:1px solid #ccc;padding:.5rem;}
-        .required{color:#c24100;}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: .5rem;
+        }
+
+        .required {
+            color: #c24100;
+        }
     </style>
 </head>
+
 <body class="mexican-theme">
-    <h1>Manage Reviewers</h1>
+    <h1>🌵 💃🏻 🪇 🥑 🌮 Manage Reviewers 🌮 🪅 🌶️ 🕺🏽🍋‍🟩</h1>
     <a href="/admin/reviewers/new">Add New Reviewer</a>
     <table>
         <thead>
-            <tr><th>Name</th><th>Email<span class="required">*</span></th><th>Is Admin</th><th>Actions</th></tr>
+            <tr>
+                <th>Name</th>
+                <th>Email<span class="required">*</span></th>
+                <th>Is Admin</th>
+                <th>Actions</th>
+            </tr>
         </thead>
         <tbody>
             {% for reviewer in reviewers %}
@@ -27,7 +46,8 @@
                     <a href="/admin/reviewers/{{ reviewer.id }}/edit">Edit</a>
                     {% if not reviewer.is_admin_yn %}
                     <form action="/admin/reviewers/{{ reviewer.id }}/delete" method="post" style="display:inline;">
-                        <button type="submit" onclick="return confirm('Delete reviewer {{ reviewer.email }}?')">Delete</button>
+                        <button type="submit"
+                            onclick="return confirm('Delete reviewer {{ reviewer.email }}?')">Delete</button>
                     </form>
                     {% endif %}
                 </td>
@@ -36,4 +56,5 @@
         </tbody>
     </table>
     <a href="/admin/dashboard" style="display:block; margin-top:1rem;">Back to Admin Dashboard</a>
+
 </html>
