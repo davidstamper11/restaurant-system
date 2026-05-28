@@ -1,0 +1,1 @@
+"INSERT INTO reviewers (name, email, is_admin_yn, created_by, created_on, deleted_by, password) VALUES ('David Stamper', 'david.stamper11@gmail.com', 1, 1, datetime('now'), NULL, 'foobar11');"
