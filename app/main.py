@@ -8,10 +8,11 @@ app = FastAPI(title="Restaurant Review System")
 # ensure the uploads directory exists on startup (Render provides a writable /tmp)
 os.makedirs("/tmp/uploads", exist_ok=True)
 
-# static assets
-app.mount("/static", StaticFiles(directory="static"), name="static")
-# serve uploaded photos
+# mount upload path BEFORE general static
 app.mount("/static/uploads", StaticFiles(directory="/tmp/uploads"), name="uploads")
+
+# static assets (css, js, images)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(public_routes.router)
 app.include_router(review_routes.router)
