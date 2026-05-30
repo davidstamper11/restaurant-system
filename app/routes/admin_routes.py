@@ -5,7 +5,8 @@ from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 from fastapi import APIRouter, Depends, HTTPException, Form, Request, status, UploadFile, File
-
+from fastapi.middleware import Middleware
+from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.models.db_base import Review, Restaurant
@@ -21,6 +22,32 @@ jinja_templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file_
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+# Admin middleware for session authentication
+class AdminAuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        # Skip auth checks for login route
+        if request.url.path == "/admin/login" or request.url.path == "/admin/":
+            return await call_next(request)
+        
+        # Check for valid session cookie
+        session_id = request.cookies.get("session_id")
+        if not session_id:
+            return RedirectResponse(url="/admin/login", status_code=303)
+        
+        # Check if session corresponds to an admin user
+        from app.services.db_service import get_db
+        db = next(get_db())
+        try:
+            admin = db.query(AuthorizedReviewer).filter(AuthorizedReviewer.id == int(session_id)).first()
+            if not admin or not admin.is_admin_yn:
+                return RedirectResponse(url="/admin/login", status_code=303)
+        except:
+            return RedirectResponse(url="/admin/login", status_code=303)
+        finally:
+            db.close()
+        
+        return await call_next(request)
+
 # Existing routes unchanged
 
 @router.get("/login", response_class=HTMLResponse)
@@ -33,7 +60,11 @@ async def admin_login(email: str = Form(...), password: str = Form(...), db: Ses
     admin = db.query(AuthorizedReviewer).filter(AuthorizedReviewer.email == email, AuthorizedReviewer.is_admin_yn == True).first()
     if not admin or password != admin.password:
         raise HTTPException(status_code=403, detail="Forbidden")
-    return RedirectResponse(url="/admin/dashboard", status_code=303)
+    return RedirectResponse(
+    url="/admin/dashboard",
+    status_code=303,
+    headers={"Set-Cookie": f"session_id={admin.id}; HttpOnly; Secure; SameSite=Strict"}
+)
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request):
