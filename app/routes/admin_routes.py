@@ -40,22 +40,6 @@ class AdminAuthMiddleware(BaseHTTPMiddleware):
         finally:
             db.close()
         return await call_next(request)
-        # Check for valid session cookie
-        session_id = request.cookies.get("session_id")
-        if not session_id:
-            return RedirectResponse(url="/admin/login", status_code=303)
-        # Verify admin user
-        from app.services.db_service import get_db
-        db = next(get_db())
-        try:
-            admin = db.query(AuthorizedReviewer).filter(AuthorizedReviewer.id == int(session_id)).first()
-            if not admin or not admin.is_admin_yn:
-                return RedirectResponse(url="/admin/login", status_code=303)
-        except Exception:
-            return RedirectResponse(url="/admin/login", status_code=303)
-        finally:
-            db.close()
-        return await call_next(request)
 
 # Existing routes unchanged
 
@@ -158,27 +142,7 @@ async def edit_reviewer_form(reviewer_id: int, request: Request, db: Session = D
         )
     )
 
-# UPDATE – process edit form submission
-@router.post("/reviewers/{reviewer_id}")
-async def update_reviewer(
-    reviewer_id: int,
-    name: str = Form(...),
-    email: str = Form(...),
-    is_admin_yn: bool = Form(False),
-    password: str = Form(None),
-    db: Session = Depends(get_db),
-):
-    reviewer = db.query(AuthorizedReviewer).filter(AuthorizedReviewer.id == reviewer_id).first()
-    if not reviewer:
-        raise HTTPException(status_code=404, detail="Reviewer not found")
-    reviewer.name = name
-    reviewer.email = email
-    reviewer.is_admin_yn = is_admin_yn
-    # Only update password if a new one was provided
-    if password:
-        reviewer.password = pwd_context.hash(password)
-    db.commit()
-    return RedirectResponse(url="/admin/reviewers", status_code=status.HTTP_303_SEE_OTHER)
+
 
 # DELETE – remove reviewer
 @router.post("/reviewers/{reviewer_id}/delete")
