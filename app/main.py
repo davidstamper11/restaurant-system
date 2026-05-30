@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from app.routes import public_routes, review_routes, admin_routes
 
-app = FastAPI()
+app.add_middleware(admin_routes.AdminAuthMiddleware)
 
 # Upload directory – works locally and on Render
 UPLOAD_DIR = os.getenv("UPLOAD_DIR") or os.path.join(os.getcwd(), "tmp", "uploads")
