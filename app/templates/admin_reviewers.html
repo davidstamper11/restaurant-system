@@ -44,17 +44,15 @@
                 <td>{% if reviewer.is_admin_yn %}Yes{% else %}No{% endif %}</td>
                 <td>
                     <a href="/admin/reviewers/{{ reviewer.id }}/edit">Edit</a>
-                    {% if not reviewer.is_admin_yn %}
                     <form action="/admin/reviewers/{{ reviewer.id }}/delete" method="post" style="display:inline;">
                         <button type="submit"
                             onclick="return confirm('Delete reviewer {{ reviewer.email }}?')">Delete</button>
                     </form>
-                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="/admin/dashboard" style="display:block; margin-top:1rem;">Back to Admin Dashboard</a>
+    <a href="/admin/logout" style="display:block; margin-top:1rem;">Logout as Admin</a>
 
 </html>

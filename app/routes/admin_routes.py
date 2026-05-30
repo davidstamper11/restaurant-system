@@ -1,3 +1,5 @@
+from fastapi import FastAPI
+from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 import io
 from openpyxl import Workbook
@@ -5,8 +7,6 @@ from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 from fastapi import APIRouter, Depends, HTTPException, Form, Request, status, UploadFile, File
-from fastapi.middleware import Middleware
-from fastapi.middleware.base import BaseHTTPMiddleware
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.models.db_base import Review, Restaurant
@@ -14,38 +14,47 @@ from app.models.authorized_reviewer import AuthorizedReviewer
 from app.schemas.review_schema import ReviewCreateSchema, ReviewResponseSchema
 from app.schemas.authorized_reviewer_schema import AuthorizedReviewerResponseSchema
 from app.services.db_service import get_db
-
 from passlib.context import CryptContext
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 import os
 jinja_templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "..", "templates"))
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-# Admin middleware for session authentication
+# Middleware for admin authentication
 class AdminAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # Skip auth checks for login route
-        if request.url.path == "/admin/login" or request.url.path == "/admin/":
+        if request.url.path in ("/admin/login", "/admin/"):
             return await call_next(request)
-        
-        # Check for valid session cookie
         session_id = request.cookies.get("session_id")
         if not session_id:
             return RedirectResponse(url="/admin/login", status_code=303)
-        
-        # Check if session corresponds to an admin user
         from app.services.db_service import get_db
         db = next(get_db())
         try:
             admin = db.query(AuthorizedReviewer).filter(AuthorizedReviewer.id == int(session_id)).first()
             if not admin or not admin.is_admin_yn:
                 return RedirectResponse(url="/admin/login", status_code=303)
-        except:
+        except Exception:
             return RedirectResponse(url="/admin/login", status_code=303)
         finally:
             db.close()
-        
+        return await call_next(request)
+        # Check for valid session cookie
+        session_id = request.cookies.get("session_id")
+        if not session_id:
+            return RedirectResponse(url="/admin/login", status_code=303)
+        # Verify admin user
+        from app.services.db_service import get_db
+        db = next(get_db())
+        try:
+            admin = db.query(AuthorizedReviewer).filter(AuthorizedReviewer.id == int(session_id)).first()
+            if not admin or not admin.is_admin_yn:
+                return RedirectResponse(url="/admin/login", status_code=303)
+        except Exception:
+            return RedirectResponse(url="/admin/login", status_code=303)
+        finally:
+            db.close()
         return await call_next(request)
 
 # Existing routes unchanged
@@ -58,14 +67,17 @@ async def admin_login_form(request: Request):
 @router.post("/login")
 async def admin_login(email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
     admin = db.query(AuthorizedReviewer).filter(AuthorizedReviewer.email == email, AuthorizedReviewer.is_admin_yn == True).first()
-    if not admin or password != admin.password:
+    if not admin or not pwd_context.verify(password, admin.password):
         raise HTTPException(status_code=403, detail="Forbidden")
-    return RedirectResponse(
-    url="/admin/dashboard",
-    status_code=303,
-    headers={"Set-Cookie": f"session_id={admin.id}; HttpOnly; Secure; SameSite=Strict"}
-)
+    response = RedirectResponse(url="/admin/dashboard", status_code=303)
+    response.set_cookie(key="session_id", value=str(admin.id), httponly=True, secure=True, samesite="Strict")
+    return response
 
+@router.get("/logout", response_class=HTMLResponse)
+async def admin_logout():
+    response = RedirectResponse(url="/admin/login", status_code=303)
+    response.delete_cookie(key="session_id")
+    return response
 @router.get("/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request):
     template = jinja_templates.get_template("admin_dashboard.html")
@@ -98,12 +110,11 @@ async def create_reviewer(
     password: str = Form(None),
     db: Session = Depends(get_db),
 ):
-    # Store password as plain text (no hashing)
     new_reviewer = AuthorizedReviewer(
         name=name,
         email=email,
         is_admin_yn=is_admin_yn,
-        password=password,
+        password=pwd_context.hash(password) if password else None,
     )
     db.add(new_reviewer)
     db.commit()
@@ -127,8 +138,8 @@ async def update_reviewer(
     reviewer.email = email
     reviewer.is_admin_yn = is_admin_yn
     # Update password only if a new one is provided; otherwise keep existing
-    if password is not None:
-        reviewer.password = password
+    if password:
+        reviewer.password = pwd_context.hash(password)
     db.commit()
     return RedirectResponse(url="/admin/reviewers", status_code=status.HTTP_303_SEE_OTHER)
 

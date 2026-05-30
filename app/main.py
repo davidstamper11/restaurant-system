@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from app.routes import public_routes, review_routes, admin_routes
 
 app = FastAPI(title="Restaurant Review System")
-
+app.add_middleware(admin_routes.AdminAuthMiddleware)
 # ensure the uploads directory exists on startup (Render provides a writable /tmp)
 os.makedirs("/tmp/uploads", exist_ok=True)
 
