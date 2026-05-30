@@ -226,6 +226,8 @@ async def admin_edit_review_form(request: Request, review_id: int, db: Session =
         "request": request,
         "review": review,
         "restaurant_id": review.restaurant_id,
+        "restaurant_name": review.restaurant.name,
+        "restaurant_address": review.restaurant.address,
         "edit_mode": True,
     }))
 
@@ -272,7 +274,8 @@ async def admin_update_review(
     review.homemade_tortillas_yn = homemade_tortillas_yn
     review.other_notes = other_notes
 
-    upload_dir = "/tmp/uploads"
+    from app.main import UPLOAD_DIR
+    upload_dir = UPLOAD_DIR
     if photo_file_1:
         filename = f"{uuid.uuid4().hex}_{photo_file_1.filename}"
         os.makedirs(upload_dir, exist_ok=True)

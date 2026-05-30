@@ -129,7 +129,7 @@
         <form action="/reviews/" method="post" enctype="multipart/form-data">
 
             <label>Reviewer Email<span class="required">*</span> <input type="email" name="reviewer_email"
-                    id="reviewer_email" required style="width:35%;">
+                     id="reviewer_email" required style="width:35%;" value="{{ review.reviewer_email }}">
                 <script>
                     document.getElementById('reviewer_email').addEventListener('blur', function () {
                         var email = this.value;
@@ -141,70 +141,70 @@
                 </script>
             </label>
 
-            <input type="hidden" name="restaurant_id" value="{{ restaurant_id }}">
+            <p>Review ID: {{ review.id }}</p>
+
 
             <label>Overall Score<span class="required">*</span> (0.1–5.0)
-                <input type="number" name="score" step="0.1" min="0.1" max="5" required value="0.0"
+                <input type="number" name="score" step="0.1" min="0.1" max="5" required value="{{ review.score }}"
                     style="width: 40px;">
             </label>
 
             <label class="score-label">Price<span class="required">*</span> ⚡ <span id="priceScore">0</span>
-                <input type="range" name="price_subscore" class="slider" min="0" max="5" value="0"
+                <input type="range" name="price_subscore" class="slider" min="0" max="5" value="{{ review.price_subscore }}"
                     oninput="updateSlider(this,'priceScore')">
             </label>
 
             <label class="score-label">Salsa<span class="required">*</span> 🥑 <span id="salsaScore">0</span>
-                <input type="range" name="salsa_subscore" class="slider" min="0" max="5" value="0"
+                <input type="range" name="salsa_subscore" class="slider" min="0" max="5" value="{{ review.salsa_subscore }}"
                     oninput="updateSlider(this,'salsaScore')">
             </label>
 
             <label class="score-label">Tortillas<span class="required">*</span> 🧆 <span id="tortillaScore">0</span>
-                <input type="range" name="tortillas_subscore" class="slider" min="0" max="5" value="0"
+                <input type="range" name="tortillas_subscore" class="slider" min="0" max="5" value="{{ review.tortillas_subscore }}"
                     oninput="updateSlider(this,'tortillaScore')">
             </label>
 
             <label class="score-label">Condiments<span class="required">*</span> 🌶️ <span id="condimentScore">0</span>
-                <input type="range" name="condiments_subscore" class="slider" min="0" max="5" value="0"
+                <input type="range" name="condiments_subscore" class="slider" min="0" max="5" value="{{ review.condiments_subscore }}"
                     oninput="updateSlider(this,'condimentScore')">
             </label>
 
             <label class="score-label">Ambiance<span class="required">*</span> 🌈 <span id="ambianceScore">0</span>
-                <input type="range" name="ambiance_subscore" class="slider" min="0" max="5" value="0"
+                <input type="range" name="ambiance_subscore" class="slider" min="0" max="5" value="{{ review.ambiance_subscore }}"
                     oninput="updateSlider(this,'ambianceScore')">
             </label>
 
             <label class="score-label">Flavor<span class="required">*</span> 🌟 <span id="flavorScore">0</span>
-                <input type="range" name="flavor_subscore" class="slider" min="0" max="5" value="0"
+                <input type="range" name="flavor_subscore" class="slider" min="0" max="5" value="{{ review.flavor_subscore }}"
                     oninput="updateSlider(this,'flavorScore')">
             </label>
 
             <label class="score-label">Service<span class="required">*</span> 👨‍🍳 <span id="serviceScore">0</span>
-                <input type="range" name="service_subscore" class="slider" min="0" max="5" value="0"
+                <input type="range" name="service_subscore" class="slider" min="0" max="5" value="{{ review.service_subscore }}"
                     oninput="updateSlider(this,'serviceScore')">
             </label>
 
-            <label>Homemade Tortillas? <input type="checkbox" name="homemade_tortillas_yn"></label>
+            <label>Homemade Tortillas? <input type="checkbox" name="homemade_tortillas_yn" {{ 'checked' if review.homemade_tortillas_yn else '' }}></label>
 
 
 
             <label>Reviewer Comments<span class="required">*</span></label>
             <p></p>
-            <textarea name="comments" rows="3" style="width:60%;"></textarea>
+            <textarea name="comments" rows="3" style="width:60%;">{{ review.comments }}</textarea>
             <p></p>
             <p></p>
             <label>Other Notes</label>
             <p></p>
-            <textarea name="other_notes" rows="2" style="width:60%;"></textarea>
+            <textarea name="other_notes" rows="2" style="width:60%;">{{ review.other_notes }}</textarea>
             <p></p>
             <p></p>
 
-            <label>Photo 1
-                <input type="file" name="photo_file_1" accept="image/*">
-            </label>
-
-            <label>Photo 2
-                <input type="file" name="photo_file_2" accept="image/*">
-            </label>
+<label>Photo 1
+{% if review.photo1 %}<img src="{{ review.photo1.url }}" alt="Photo 1" style="max-width:200px;" /><br>{% endif %}<input type="file" name="photo_file_1" accept="image/*" />
+</label>
+<label>Photo 2
+{% if review.photo2 %}<img src="{{ review.photo2.url }}" alt="Photo 2" style="max-width:200px;" /><br>{% endif %}<input type="file" name="photo_file_2" accept="image/*" />
+</label>
 
             <p class="note"><span class="required">*</span> indicates required field</p>
 

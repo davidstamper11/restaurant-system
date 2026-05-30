@@ -40,7 +40,9 @@ async def submit_review_form(
     # handle photo uploads
     photo1 = None
     photo2 = None
-    upload_dir = "/tmp/uploads"
+    # use the shared upload directory
+    from app.main import UPLOAD_DIR
+    upload_dir = UPLOAD_DIR
     import os, shutil, uuid
     if photo_file_1:
         filename = f"{uuid.uuid4().hex}_{photo_file_1.filename}"
